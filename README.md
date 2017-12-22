@@ -459,19 +459,19 @@ public interface LibraryService {
 `google.properties`这个配置文件需要自己定义，将自己需要的参数填写到这个文件里面，在`spring.xml`里面以`${keyName}`的方式获取到值。
 
 ```xml
-	<context:property-placeholder location="classpath*:config/google.properties"/> 
-	
-	<bean name="failoverHandle" class="com.googlecode.jsonrpc4j.FailoverHandleImpl">
-		<property name="primaryBaseUrl" value="${google.primaryBaseUrl}" />
-		<property name="failOverBaseUrl" value="${google.failOverBaseUrl}" />
-	</bean>
-	
-	<bean class="com.googlecode.jsonrpc4j.spring.AutoJsonRpcClientProxyCreator">
-	    <property name="baseUrl" value="${google.primaryBaseUrl}" />
-	    <property name="scanPackage" value="com.jumbo.google.manager.services" />
-	    <property name="connectionTimeoutMillis" value="${google.timeoutmillis.connection}" />
-	    <property name="readTimeoutMillis" value="${google.timeoutmillis.read}" />
-	</bean>
+<context:property-placeholder location="classpath*:config/google.properties"/> 
+
+<bean name="failoverHandle" class="com.googlecode.jsonrpc4j.FailoverHandleImpl">
+	<property name="primaryBaseUrl" value="${google.primaryBaseUrl}" />
+	<property name="failOverBaseUrl" value="${google.failOverBaseUrl}" />
+</bean>
+
+<bean class="com.googlecode.jsonrpc4j.spring.AutoJsonRpcClientProxyCreator">
+    <property name="baseUrl" value="${google.primaryBaseUrl}" />
+    <property name="scanPackage" value="com.jumbo.google.manager.services" />
+    <property name="connectionTimeoutMillis" value="${google.timeoutmillis.connection}" />
+    <property name="readTimeoutMillis" value="${google.timeoutmillis.read}" />
+</bean>
 ```
 
 [Google Group]: http://groups.google.com/group/json-rpc

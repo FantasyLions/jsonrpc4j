@@ -1,10 +1,15 @@
 package com.googlecode.jsonrpc4j.spring;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.googlecode.jsonrpc4j.JsonRpcClient.RequestListener;
-import com.googlecode.jsonrpc4j.ExceptionResolver;
-import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
-import com.googlecode.jsonrpc4j.ReflectionUtil;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
@@ -15,14 +20,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.remoting.support.UrlBasedRemoteAccessor;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.googlecode.jsonrpc4j.ExceptionResolver;
+import com.googlecode.jsonrpc4j.FailoverHandle;
+import com.googlecode.jsonrpc4j.JsonRpcClient.RequestListener;
+import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
+import com.googlecode.jsonrpc4j.ReflectionUtil;
 
 /**
  * {@link FactoryBean} for creating a {@link UrlBasedRemoteAccessor}
@@ -44,6 +47,10 @@ public class JsonProxyFactoryBean extends UrlBasedRemoteAccessor implements Meth
 	private ExceptionResolver exceptionResolver; 
 
 	private ApplicationContext applicationContext;
+	
+	private int connectionTimeoutMillis = 60 * 1000;
+	
+	private int readTimeoutMillis = 60 * 1000 * 2;
 
 	/**
 	 * {@inheritDoc}
@@ -74,7 +81,13 @@ public class JsonProxyFactoryBean extends UrlBasedRemoteAccessor implements Meth
 				jsonRpcHttpClient.setRequestListener(requestListener);
 				jsonRpcHttpClient.setSslContext(sslContext);
 				jsonRpcHttpClient.setHostNameVerifier(hostNameVerifier);
-	
+				jsonRpcHttpClient.setConnectionTimeoutMillis(connectionTimeoutMillis);
+				jsonRpcHttpClient.setReadTimeoutMillis(readTimeoutMillis);
+
+				if ( applicationContext.containsBean("failoverHandle") ) {
+					jsonRpcHttpClient.setFailoverHandle( (FailoverHandle)this.applicationContext.getBean("failoverHandle") );
+				}
+				
 				if (contentType != null) {
 					jsonRpcHttpClient.setContentType(contentType);
 				}
@@ -86,8 +99,6 @@ public class JsonProxyFactoryBean extends UrlBasedRemoteAccessor implements Meth
 				throw new RuntimeException(mue);
 			}
 		}
-
-		ReflectionUtil.clearCache();
 	}
 
 	/**
@@ -189,5 +200,14 @@ public class JsonProxyFactoryBean extends UrlBasedRemoteAccessor implements Meth
 		this.exceptionResolver = exceptionResolver;
 	}
 
+	public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+		this.connectionTimeoutMillis = connectionTimeoutMillis;
+	}
 
+	public void setReadTimeoutMillis(int readTimeoutMillis) {
+		this.readTimeoutMillis = readTimeoutMillis;
+	}
+
+	
 }
+

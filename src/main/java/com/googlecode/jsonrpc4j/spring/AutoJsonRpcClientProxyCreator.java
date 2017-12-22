@@ -1,9 +1,16 @@
 package com.googlecode.jsonrpc4j.spring;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.googlecode.jsonrpc4j.JsonRpcService;
+import static java.lang.String.format;
+import static org.springframework.util.ClassUtils.convertClassNameToResourcePath;
+import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -16,13 +23,8 @@ import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import static java.lang.String.format;
-import static org.springframework.util.ClassUtils.convertClassNameToResourcePath;
-import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.googlecode.jsonrpc4j.JsonRpcService;
 
 /**
  * Auto-creates proxies for service interfaces annotated with {@link JsonRpcService}.
@@ -37,8 +39,12 @@ public class AutoJsonRpcClientProxyCreator implements BeanFactoryPostProcessor, 
 	private ObjectMapper objectMapper;
 	private String contentType;
 	
+	private int connectionTimeoutMillis = 60 * 1000;
+	private int readTimeoutMillis = 60 * 1000 * 2;
+	
+	
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		SimpleMetadataReaderFactory metadataReaderFactory = new SimpleMetadataReaderFactory(applicationContext);
 		DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) beanFactory;
 		String resolvedPath = resolvePackageToScan();
@@ -59,7 +65,7 @@ public class AutoJsonRpcClientProxyCreator implements BeanFactoryPostProcessor, 
 				}
 			}
 		} catch (IOException e) {
-			throw new IllegalStateException(format("Cannot scan package '%s' for classes.", resolvedPath), e);
+			throw new RuntimeException(format("Cannot scan package '%s' for classes.", resolvedPath), e);
 		}
 	}
 	
@@ -77,7 +83,9 @@ public class AutoJsonRpcClientProxyCreator implements BeanFactoryPostProcessor, 
 		BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
 				.rootBeanDefinition(JsonProxyFactoryBean.class)
 				.addPropertyValue("serviceUrl", appendBasePath(path))
-				.addPropertyValue("serviceInterface", className);
+				.addPropertyValue("serviceInterface", className)
+				.addPropertyValue("connectionTimeoutMillis", this.connectionTimeoutMillis)
+				.addPropertyValue("readTimeoutMillis", this.readTimeoutMillis);
 		
 		if (objectMapper != null) {
 			beanDefinitionBuilder.addPropertyValue("objectMapper", objectMapper);
@@ -97,12 +105,12 @@ public class AutoJsonRpcClientProxyCreator implements BeanFactoryPostProcessor, 
 		try {
 			return new URL(baseUrl, path).toString();
 		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException(format("Cannot combine URLs '%s' and '%s' to valid URL.", baseUrl, path), e);
+			throw new RuntimeException(format("Cannot combine URLs '%s' and '%s' to valid URL.", baseUrl, path), e);
 		}
 	}
 	
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 	
@@ -121,4 +129,15 @@ public class AutoJsonRpcClientProxyCreator implements BeanFactoryPostProcessor, 
 	public void setContentType(String contextType) {
 		this.contentType = contextType;
 	}
+
+	public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+		this.connectionTimeoutMillis = connectionTimeoutMillis;
+	}
+
+	public void setReadTimeoutMillis(int readTimeoutMillis) {
+		this.readTimeoutMillis = readTimeoutMillis;
+	}
+	
+	
 }
+

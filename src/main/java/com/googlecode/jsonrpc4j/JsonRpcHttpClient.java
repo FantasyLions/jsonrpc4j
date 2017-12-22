@@ -1,11 +1,8 @@
 package com.googlecode.jsonrpc4j;
+import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.ACCEPT_ENCODING;
+import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.CONTENT_ENCODING;
+import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.JSONRPC_CONTENT_TYPE;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,9 +20,15 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.ACCEPT_ENCODING;
-import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.CONTENT_ENCODING;
-import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.JSONRPC_CONTENT_TYPE;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A JSON-RPC client that uses the HTTP protocol.
@@ -33,6 +36,8 @@ import static com.googlecode.jsonrpc4j.JsonRpcBasicServer.JSONRPC_CONTENT_TYPE;
 @SuppressWarnings("unused")
 public class JsonRpcHttpClient extends JsonRpcClient implements IJsonRpcClient {
 	
+	private static final Logger logger = LoggerFactory.getLogger(JsonRpcHttpClient.class);
+
 	private static final String GZIP = "gzip";
 	
 	private final Map<String, String> headers = new HashMap<>();
@@ -44,6 +49,8 @@ public class JsonRpcHttpClient extends JsonRpcClient implements IJsonRpcClient {
 	private HostnameVerifier hostNameVerifier = null;
 	private String contentType = JSONRPC_CONTENT_TYPE;
 	private boolean gzipRequests = false;
+	
+	private FailoverHandle failoverHandle;
 	
 	/**
 	 * Creates the {@link JsonRpcHttpClient} bound to the given {@code serviceUrl}.
@@ -161,11 +168,20 @@ public class JsonRpcHttpClient extends JsonRpcClient implements IJsonRpcClient {
 					throw new HttpException(readErrorString(connection), ef);
 				}
 			}
+		} catch ( Throwable e ) {
+			if ( failoverHandle != null ) {
+				Object obj =  failoverHandle.doSomething(methodName, argument, serviceUrl.toString());
+				if ( obj != null ) {
+					return obj;
+				}
+			}
+			throw e;
 		} finally {
 			connection.disconnect();
 		}
 		
 	}
+	
 	
 	/**
 	 * {@inheritDoc}
@@ -348,5 +364,11 @@ public class JsonRpcHttpClient extends JsonRpcClient implements IJsonRpcClient {
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
+
+	public void setFailoverHandle(FailoverHandle failoverHandle) {
+		this.failoverHandle = failoverHandle;
+	}
+	
 	
 }
+

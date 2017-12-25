@@ -474,6 +474,16 @@ public interface LibraryService {
 </bean>
 ```
 
+## How to publish with grable
+
+```shell
+windows:
+gradlew.bat publishToMavenLocal
+
+linux:
+gradlew publishToMavenLocal
+```
+
 [Google Group]: http://groups.google.com/group/json-rpc
 [Jackson page]: https://github.com/FasterXML/jackson
 [JSON RPC Spec]: http://www.jsonrpc.org/specification

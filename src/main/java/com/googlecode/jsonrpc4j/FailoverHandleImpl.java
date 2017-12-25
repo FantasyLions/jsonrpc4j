@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <p>默认如果主线请求发送失败，立即发送回滚操作，不管是否发送回滚成功启用配用线路重新发送之前失败请求</p>
+ * <p>The default if the mainline request fails, immediately send a rollback operation, whether to send rollback success enabled with the line before resending failed requests</p>
  * @author zl.shi
  *
  */
@@ -24,7 +24,7 @@ public class FailoverHandleImpl implements FailoverHandle {
 	@Override
 	public Object doSomething( String methodName, Object argument, String originalUrl ) {
 		
-		// 防止死循环请求
+		// To prevent infinite loop request
 		if ( originalUrl.equals(failOverBaseUrl) ) {
 			logger.error("The failover failed! This url is the same with failover url, So won't repeat send the request again.");
 			return null;
@@ -37,7 +37,7 @@ public class FailoverHandleImpl implements FailoverHandle {
 	
 	
 	/**
-	 * 请求备用服务器
+	 * Request the standby server
 	 * @param methodName
 	 * @param argument
 	 * @return
@@ -65,7 +65,7 @@ public class FailoverHandleImpl implements FailoverHandle {
 	
 	
 	/**
-	 * 获取一个初始化的JsonRpcHttpClient
+	 * To obtain an initialization JsonRpcHttpClient
 	 * @param url
 	 * @return
 	 * @throws MalformedURLException

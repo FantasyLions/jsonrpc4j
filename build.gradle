@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven'
     id 'nebula.optional-base' version '3.1.0'
     id 'nebula.provided-base' version '3.1.0'
     id 'findbugs'
@@ -15,8 +16,8 @@ plugins {
 }
 
 description = 'This project aims to provide the facility to easily implement JSON-RPC for the java programming language.'
-version = '1.5.2'
-group = 'com.github.briandilley.jsonrpc4j'
+version = '1.6.0'
+group = 'com.serio'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -153,7 +154,7 @@ bintray {
     publish = true
     pkg {
         repo = 'maven'
-        name = 'com.github.briandilley.jsonrpc4j:jsonrpc4j'
+        name = 'com.serio:jsonrpc4j'
         desc = project.description
         licenses = ['MIT']
         publications = ['release']

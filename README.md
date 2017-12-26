@@ -476,12 +476,24 @@ public interface LibraryService {
 
 ## How to publish with grable
 
-```shell
+```SHELL
 windows:
 gradlew.bat publishToMavenLocal
 
 linux:
 gradlew publishToMavenLocal
+
+```
+
+### Maven deploy
+
+```SHELL
+windows:
+gradlew.bat publish
+
+linux:
+gradlew publish
+
 ```
 
 [Google Group]: http://groups.google.com/group/json-rpc

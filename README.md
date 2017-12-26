@@ -35,17 +35,36 @@ from the maven central repo. Add the following to your pom.xml if you're
 using maven:
 
 
-In `<dependencies>`:
+In `<dependencies>` version of  briandilley:
 
 ```xml
 
-	<!-- jsonrpc4j -->
-	<dependency>
-		<groupId>com.github.briandilley.jsonrpc4j</groupId>
-		<artifactId>jsonrpc4j</artifactId>
-		<version>1.5.2</version>
-	</dependency>
+<!-- jsonrpc4j -->
+<dependency>
+	<groupId>com.github.briandilley.jsonrpc4j</groupId>
+	<artifactId>jsonrpc4j</artifactId>
+	<version>1.5.2</version>
+</dependency>
 
+```
+
+In `<dependencies>` version of  serio, Support failover:
+
+```xml
+
+<repositories>
+	<repository>
+		<id>serio-repository</id>
+		<url>https://raw.githubusercontent.com/fantasylion/serio-repository/master</url>
+	</repository>
+</repositories>	
+
+<dependency>
+	<groupId>com.serio</groupId>
+	<artifactId>jsonrpc4j</artifactId>
+	<version>1.6.0</version>
+</dependency>
+	
 ```
 
 If you want to just download the projects output JAR and it's dependencies you can

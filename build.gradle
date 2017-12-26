@@ -147,6 +147,15 @@ publishing {
     }
 }
 
+publishing {
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            url "$buildDir/repo"
+        }
+    }
+}
+
 bintray {
     user = project.hasProperty('user') ? project.property('user') : 'not_set'
     key = project.hasProperty('key') ? project.property('key') : 'not_set'
